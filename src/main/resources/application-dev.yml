@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//10.10.130.202:1521/SCM
+    username: SCM
+    password: q1w2e3r4Fgfyt
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+
+server:
+  port: 8081
