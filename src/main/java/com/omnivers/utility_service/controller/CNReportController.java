@@ -46,7 +46,6 @@ public class CNReportController {
                     .size(size)
                     .build();
 
-            // Get filtered results (validation happens in service layer)
             PageResponse<CNReportDTO> result = cnReportService.getFilteredCNReports(request);
             return ResponseEntity.ok(ApiResponse.success("CN reports retrieved successfully", result));
             

@@ -2,10 +2,12 @@ package com.omnivers.utility_service.repository;
 
 import com.omnivers.utility_service.model.CNReport;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -93,6 +95,30 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
             @Param("ewbStatus") String ewbStatus,
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate
+    );
+
+
+    @Modifying
+    @Query(value = """
+        UPDATE OPS_CN_M SET 
+            CN_CN_STATUS = 1, 
+            CN_FREIGHT_PAID_MODE = CASE WHEN :isFoc = 1 THEN 6 ELSE :freightType END, 
+            CN_BLLING_PARTY_CODE = CASE WHEN :freightType IN (3,4) THEN :customerCode ELSE CN_BLLING_PARTY_CODE END,
+            CN_TPTR_MODE = :transportMode, 
+            CN_LOAD_TYPE = :loadType, 
+            CN_VAS_AMOUNT_TYPE = :collectionMode,
+            CN_EXTRA_APPVL_AMT = :collectionAmount
+        WHERE CN_CN_NO = :cnNo
+        """, nativeQuery = true)
+    int updateCNMaster(
+            @Param("cnNo") Long cnNo,
+            @Param("isFoc") Integer isFoc,
+            @Param("freightType") Integer freightType,
+            @Param("customerCode") Integer customerCode,
+            @Param("transportMode") Integer transportMode,
+            @Param("loadType") Integer loadType,
+            @Param("collectionMode") String collectionMode,
+            @Param("collectionAmount") BigDecimal collectionAmount
     );
 }
 
