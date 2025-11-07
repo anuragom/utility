@@ -1,10 +1,8 @@
 package com.omnivers.utility_service.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 @Data
 @Builder
@@ -21,7 +19,7 @@ public class CNReportFilterDTO {
     @JsonProperty("dateType")
     private String dateType; // "CN_DATE" or "EWB_DATE" for activated CN
     
-    @JsonProperty("cnStatus")
+    @NotNull
     private String cnStatus; // "ACTIVATED" or "DRAFT"
     
     @JsonProperty("ewbStatus")

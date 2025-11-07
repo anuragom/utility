@@ -7,6 +7,7 @@ import com.omnivers.utility_service.dto.PageResponse;
 import com.omnivers.utility_service.dto.CNReportDTO;
 import com.omnivers.utility_service.service.CNReportService;
 import com.omnivers.utility_service.util.DateUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class CNReportController {
 
     @PostMapping(value = "/filter", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<PageResponse<CNReportDTO>>> filterCNReports(
-            @RequestBody CNReportFilterDTO filterDTO,
+            @Valid @RequestBody CNReportFilterDTO filterDTO,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
     ) {

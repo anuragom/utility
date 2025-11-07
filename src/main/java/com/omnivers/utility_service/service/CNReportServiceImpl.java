@@ -40,16 +40,17 @@ public class CNReportServiceImpl implements CNReportService {
             request.setDateType(upperDateType);
         }
         
-        // Validate cnStatus
-        if (request.getCnStatus() != null && !request.getCnStatus().trim().isEmpty()) {
-            String upperCnStatus = request.getCnStatus().trim().toUpperCase();
-            if (!VALID_CN_STATUSES.contains(upperCnStatus)) {
-                throw new IllegalArgumentException(
-                    String.format("Invalid cnStatus: '%s'. Valid values are: %s", 
-                        request.getCnStatus(), String.join(", ", VALID_CN_STATUSES)));
-            }
-            request.setCnStatus(upperCnStatus);
+        // Validate cnStatus (required field)
+        if (request.getCnStatus() == null || request.getCnStatus().trim().isEmpty()) {
+            throw new IllegalArgumentException("cnStatus is required and cannot be null or empty");
         }
+        String upperCnStatus = request.getCnStatus().trim().toUpperCase();
+        if (!VALID_CN_STATUSES.contains(upperCnStatus)) {
+            throw new IllegalArgumentException(
+                String.format("Invalid cnStatus: '%s'. Valid values are: %s", 
+                    request.getCnStatus(), String.join(", ", VALID_CN_STATUSES)));
+        }
+        request.setCnStatus(upperCnStatus);
         
         // Validate ewbStatus
         if (request.getEwbStatus() != null) {

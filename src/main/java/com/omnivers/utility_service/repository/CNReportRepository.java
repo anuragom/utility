@@ -33,7 +33,7 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
         JOIN COR_CUSTOMER_M D ON D.CUSTOMER_CUSTOMER_CODE = A.CN_CONSIGNOR_CODE
         WHERE A.ENTER_FORM_NAME = 'EWB'
         AND (
-            (:cnStatus IS NULL OR (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN(7,2)))
+            (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN(7,2))
             OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
         )
         AND (
@@ -71,7 +71,7 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
         JOIN COR_CUSTOMER_M D ON D.CUSTOMER_CUSTOMER_CODE = A.CN_CONSIGNOR_CODE
         WHERE A.ENTER_FORM_NAME = 'EWB'
         AND (
-            (:cnStatus IS NULL OR (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN(7,2)))
+            (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN(7,2))
             OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
         )
         AND (
