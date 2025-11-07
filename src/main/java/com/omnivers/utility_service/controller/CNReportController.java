@@ -1,12 +1,14 @@
 package com.omnivers.utility_service.controller;
 
 import com.omnivers.utility_service.dto.ApiResponse;
+import com.omnivers.utility_service.dto.CNReportFilterDTO;
 import com.omnivers.utility_service.dto.CNReportFilterRequest;
 import com.omnivers.utility_service.dto.PageResponse;
 import com.omnivers.utility_service.dto.CNReportDTO;
 import com.omnivers.utility_service.service.CNReportService;
 import com.omnivers.utility_service.util.DateUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,27 +21,26 @@ public class CNReportController {
 
     private final CNReportService cnReportService;
 
-    @GetMapping("/filter")
-    public ResponseEntity<ApiResponse<PageResponse<CNReportDTO>>> getFilteredCNReports(
-            @RequestParam(required = false) String fromDate,
-            @RequestParam(required = false) String toDate,
-            @RequestParam(required = false) String dateType,
-            @RequestParam(required = false) String cnStatus,
-            @RequestParam(required = false) String ewbStatus,
+    @PostMapping(value = "/filter", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<PageResponse<CNReportDTO>>> filterCNReports(
+            @RequestBody CNReportFilterDTO filterDTO,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
     ) {
         try {
             // Parse and validate dates
-            LocalDate[] dates = DateUtil.parseAndValidateDateRange(fromDate, toDate);
+            LocalDate[] dates = DateUtil.parseAndValidateDateRange(
+                    filterDTO.getFromDate(), 
+                    filterDTO.getToDate()
+            );
             
             // Build request object
             CNReportFilterRequest request = CNReportFilterRequest.builder()
                     .fromDate(dates[0])
                     .toDate(dates[1])
-                    .dateType(dateType)
-                    .cnStatus(cnStatus)
-                    .ewbStatus(ewbStatus)
+                    .dateType(filterDTO.getDateType())
+                    .cnStatus(filterDTO.getCnStatus())
+                    .ewbStatus(filterDTO.getEwbStatus())
                     .page(page)
                     .size(size)
                     .build();
