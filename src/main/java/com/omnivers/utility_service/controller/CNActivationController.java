@@ -5,43 +5,42 @@ import com.omnivers.utility_service.dto.CNActivationRequest;
 import com.omnivers.utility_service.service.CNActivationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cn")
 @RequiredArgsConstructor
+@Slf4j
 public class CNActivationController {
 
     private final CNActivationService cnActivationService;
 
-    @PostMapping(value = "/activate")
+    @PostMapping("/activate")
     public ResponseEntity<ApiResponse<Object>> activateCN(
-            @Valid @RequestBody CNActivationRequest request
+            @RequestParam("cnNo") Long cnNo,
+            @RequestParam("ewayBillNo") String ewayBillNo,
+            @Valid @RequestBody CNActivationRequest requestBody
     ) {
         try {
-            ApiResponse<Object> response = cnActivationService.activateCN(request);
-            
-            if ("failure".equals(response.getStatus())) {
+            ApiResponse<Object> response = cnActivationService.activateCN(cnNo, ewayBillNo, requestBody);
+            if ("failure".equalsIgnoreCase(response.getStatus())) {
+                log.warn("Activation failed for CN: {} E-way: {}. Reason: {}", cnNo, ewayBillNo, response.getMessage());
                 return ResponseEntity.badRequest().body(response);
             }
-            
+            log.info("CN activated successfully: {} E-way: {}", cnNo, ewayBillNo);
             return ResponseEntity.ok(response);
-            
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.failure(e.getMessage()));
+            log.error("Invalid request for CN activation: {} E-way: {}. Error: {}", cnNo, ewayBillNo, e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.failure(e.getMessage()));
+
         } catch (Exception e) {
-            e.printStackTrace();
-            String errorMessage = e.getMessage();
-            if (errorMessage == null || errorMessage.isEmpty()) {
-                errorMessage = e.getClass().getSimpleName() + ": " + 
-                        (e.getCause() != null ? e.getCause().getMessage() : "Unknown error");
-            }
-            return ResponseEntity.status(500)
-                    .body(ApiResponse.failure("Error activating CN: " + errorMessage));
+            log.error("Unexpected error while activating CN: {} E-way: {}", cnNo, ewayBillNo, e);
+            String errorMsg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.failure(errorMsg));
         }
     }
 }
-

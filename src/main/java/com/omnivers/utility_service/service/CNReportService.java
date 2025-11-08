@@ -1,10 +1,10 @@
 package com.omnivers.utility_service.service;
 
 import com.omnivers.utility_service.dto.CNReportDTO;
-import com.omnivers.utility_service.dto.CNReportFilterRequest;
-import com.omnivers.utility_service.dto.PageResponse;
+import com.omnivers.utility_service.dto.CNReportFilterDTO;
+import org.springframework.data.domain.Page;
 
 public interface CNReportService {
-    PageResponse<CNReportDTO> getFilteredCNReports(CNReportFilterRequest request);
+    Page<CNReportDTO> getFilteredCNReports(CNReportFilterDTO filterDTO, Integer page, Integer size);
 }
 

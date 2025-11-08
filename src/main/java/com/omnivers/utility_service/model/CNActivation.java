@@ -202,4 +202,3 @@ public class CNActivation {
     @Column(name = "CN_NUMBER_04")
     private Long cnNumber04;
 }
-

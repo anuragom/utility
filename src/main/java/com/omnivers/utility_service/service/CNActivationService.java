@@ -4,6 +4,6 @@ import com.omnivers.utility_service.dto.ApiResponse;
 import com.omnivers.utility_service.dto.CNActivationRequest;
 
 public interface CNActivationService {
-    ApiResponse<Object> activateCN(CNActivationRequest request);
+    ApiResponse<Object> activateCN(Long cnNo, String ewayBillNo, CNActivationRequest request);
 }
 

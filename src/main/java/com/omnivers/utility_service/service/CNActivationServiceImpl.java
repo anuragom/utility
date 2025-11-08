@@ -5,6 +5,7 @@ import com.omnivers.utility_service.dto.CNActivationRequest;
 import com.omnivers.utility_service.repository.CNActivationRepository;
 import com.omnivers.utility_service.repository.CNReportRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CNActivationServiceImpl implements CNActivationService {
 
     private final CNActivationRepository cnActivationRepository;
@@ -19,18 +21,15 @@ public class CNActivationServiceImpl implements CNActivationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse<Object> activateCN(CNActivationRequest request) {
+    public ApiResponse<Object> activateCN(Long cnNo, String ewayBillNo, CNActivationRequest request) {
 
         Integer isFoc = (request.getIsFoc() != null && request.getIsFoc()) ? 1 : 0;
-        Integer freightType = request.getFreightType();
-        Integer customerCode = request.getCustomerCode();
 
-        // --- Step 1: Update CN Master Table (OPS_CN_M)
         int masterUpdated = cnReportRepository.updateCNMaster(
-                request.getCnNo(),
+                cnNo,
                 isFoc,
-                freightType,
-                customerCode,
+                request.getFreightType(),
+                request.getCustomerCode(),
                 request.getTransportMode(),
                 request.getLoadType(),
                 request.getCollectionMode(),
@@ -38,13 +37,13 @@ public class CNActivationServiceImpl implements CNActivationService {
         );
 
         if (masterUpdated == 0) {
-            throw new IllegalArgumentException("CN number not found or could not be updated: " + request.getCnNo());
+            log.warn("CN Master not found or could not be updated for CN: {}.", cnNo);
+            throw new IllegalArgumentException("CN Master not found or could not be updated for CN: " + cnNo);
         }
 
-        // --- Step 2: Update CN Detail Table (OPS_CN_D)
         int detailUpdated = cnActivationRepository.updateCNDetail(
-                request.getCnNo(),
-                request.getEwayBillNo(),
+                cnNo,
+                ewayBillNo,
                 request.getPackageCount(),
                 request.getQuantity(),
                 request.getAsnNo(),
@@ -60,10 +59,8 @@ public class CNActivationServiceImpl implements CNActivationService {
         );
 
         if (detailUpdated == 0) {
-            throw new IllegalArgumentException(
-                    "CN detail not found for CN number: " + request.getCnNo() +
-                            " and E-way bill: " + request.getEwayBillNo()
-            );
+            log.warn("CN Detail update failed for CN: {} E-way: {}.", cnNo, ewayBillNo);
+            throw new IllegalArgumentException("Failed to update CN detail for CN: " + cnNo + " and E-way bill: " + ewayBillNo);
         }
 
         return ApiResponse.success("CN activated successfully", null);
