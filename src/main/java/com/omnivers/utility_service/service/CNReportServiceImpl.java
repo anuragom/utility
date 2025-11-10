@@ -6,6 +6,7 @@ import com.omnivers.utility_service.mapper.CNReportMapper;
 import com.omnivers.utility_service.repository.CNReportRepository;
 import com.omnivers.utility_service.util.DateParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CNReportServiceImpl implements CNReportService {
 
     private final CNReportRepository cnReportRepository;
@@ -47,6 +49,58 @@ public class CNReportServiceImpl implements CNReportService {
 
         Page<Object[]> resultPage = cnReportRepository.findCNReports(
                 cnStatus, dateType, ewbStatus, fromDate, toDate, pageable
+        );
+
+        return resultPage.map(cnReportMapper::mapToDTO);
+    }
+
+    @Override
+    public Page<CNReportDTO> getActivatedCNReports(String fromDate, String toDate, String dateType, Integer page, Integer size) {
+        LocalDate fromDateParsed = DateParser.parseDate(fromDate);
+        LocalDate toDateParsed = DateParser.parseDate(toDate);
+
+        if ((fromDate != null && toDate == null) || (fromDate == null && toDate != null)) {
+            throw new IllegalArgumentException("Both fromDate and toDate must be provided together");
+        }
+
+        if (fromDateParsed != null && toDateParsed != null && fromDateParsed.isAfter(toDateParsed)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        String dateTypeUpper = dateType != null ? dateType.trim().toUpperCase() : "CN_DATE";
+
+        int pageNum = page != null && page >= 0 ? page : 0;
+        int pageSize = size != null && size > 0 && size <= 100 ? size : 10;
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+
+        Page<Object[]> resultPage = cnReportRepository.findActivatedCNReports(
+                dateTypeUpper, fromDateParsed, toDateParsed, pageable
+        );
+
+        return resultPage.map(cnReportMapper::mapToDTO);
+    }
+
+    @Override
+    public Page<CNReportDTO> getDraftCNReports(String fromDate, String toDate, String ewbStatus, Integer page, Integer size) {
+        LocalDate fromDateParsed = DateParser.parseDate(fromDate);
+        LocalDate toDateParsed = DateParser.parseDate(toDate);
+
+        if ((fromDate != null && toDate == null) || (fromDate == null && toDate != null)) {
+            throw new IllegalArgumentException("Both fromDate and toDate must be provided together");
+        }
+
+        if (fromDateParsed != null && toDateParsed != null && fromDateParsed.isAfter(toDateParsed)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        String ewbStatusUpper = ewbStatus != null ? ewbStatus.trim().toUpperCase() : null;
+
+        int pageNum = page != null && page >= 0 ? page : 0;
+        int pageSize = size != null && size > 0 && size <= 100 ? size : 10;
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+
+        Page<Object[]> resultPage = cnReportRepository.findDraftCNReports(
+                ewbStatusUpper, fromDateParsed, toDateParsed, pageable
         );
 
         return resultPage.map(cnReportMapper::mapToDTO);
