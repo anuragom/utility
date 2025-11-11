@@ -2,6 +2,7 @@ package com.omnivers.utility_service.service;
 
 import com.omnivers.utility_service.dto.CNReportDTO;
 import com.omnivers.utility_service.dto.CNReportFilterDTO;
+import com.omnivers.utility_service.dto.CNResponseDTO;
 import com.omnivers.utility_service.mapper.CNReportMapper;
 import com.omnivers.utility_service.repository.CNReportRepository;
 import com.omnivers.utility_service.util.DateParser;
@@ -13,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,13 +47,14 @@ public class CNReportServiceImpl implements CNReportService {
         String dateType = filterDTO.getDateType() != null ? filterDTO.getDateType().trim().toUpperCase() : "CN_DATE";
         String ewbStatus = filterDTO.getEwbStatus() != null ? filterDTO.getEwbStatus().trim().toUpperCase() : null;
         String cnStatus = filterDTO.getCnStatus().trim().toUpperCase(); // ACTIVATED or DRAFT
+        String searchText = filterDTO.getSearchText() != null ? filterDTO.getSearchText().trim() : null;
 
         int pageNum = page != null && page >= 0 ? page : 0;
         int pageSize = size != null && size > 0 && size <= 100 ? size : 10;
         Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         Page<Object[]> resultPage = cnReportRepository.findCNReports(
-                cnStatus, dateType, ewbStatus, fromDate, toDate, pageable
+                cnStatus, dateType, ewbStatus, fromDate, toDate, searchText,pageable
         );
 
         return resultPage.map(cnReportMapper::mapToDTO);
@@ -105,4 +111,29 @@ public class CNReportServiceImpl implements CNReportService {
 
         return resultPage.map(cnReportMapper::mapToDTO);
     }
+    @Override
+    public CNResponseDTO getCNDetails(Long cnNo) {
+        if (cnNo == null || cnNo <= 0) {
+            throw new IllegalArgumentException("CN number must be a positive non-null value");
+        }
+
+        try {
+            List<Object[]> results = cnReportRepository.findCNDetailsByCnNo(cnNo);
+
+            if (results == null || results.isEmpty()) {
+                throw new IllegalStateException("No CN details found for CN number: " + cnNo);
+            }
+
+            return cnReportMapper.mapToCNResponse(results);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid input for CN details fetch: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching CN details for CN number: {}", cnNo, e);
+            throw new RuntimeException("Unexpected error occurred while fetching CN details");
+        }
+    }
+
+
 }

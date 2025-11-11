@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,4 +36,9 @@ public class CNReportFilterDTO {
 
     @JsonProperty("ewbStatus")
     private String ewbStatus; // For draft CN: "" or "EXPIRED"
+
+    @JsonProperty("searchText")
+    private String searchText;
+
+
 }

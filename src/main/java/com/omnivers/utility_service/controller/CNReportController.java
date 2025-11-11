@@ -3,6 +3,7 @@ package com.omnivers.utility_service.controller;
 import com.omnivers.utility_service.dto.ApiResponse;
 import com.omnivers.utility_service.dto.CNReportFilterDTO;
 import com.omnivers.utility_service.dto.CNReportDTO;
+import com.omnivers.utility_service.dto.CNResponseDTO;
 import com.omnivers.utility_service.service.CNReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class CNReportController {
     public ResponseEntity<ApiResponse<Page<CNReportDTO>>> getActivatedCNReports(
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate,
-                @RequestParam(required = false, defaultValue = "CN_DATE") String dateType,
+            @RequestParam(required = false, defaultValue = "CN_DATE") String dateType,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ) {
@@ -83,4 +84,20 @@ public class CNReportController {
                     .body(ApiResponse.failure("Error retrieving draft CN reports: " + errorMessage));
         }
     }
+
+    @GetMapping("/{cnNo}")
+    public ApiResponse<CNResponseDTO> getCNDetails(@PathVariable Long cnNo) {
+        try{
+            CNResponseDTO response = cnReportService.getCNDetails(cnNo);
+            return ApiResponse.success("CN details retrieved successfully", response);
+        }
+        catch (Exception ex){
+            log.error("Error retrieving CN details", ex);
+            String errorMessage = ex.getMessage() != null ? ex.getMessage() : "Internal server error";
+            return ApiResponse.failure("Error retrieving CN details: " + errorMessage);
+        }
+
+    }
+
 }
+
