@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y tzdata && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Expose port
-EXPOSE 8081
+EXPOSE 8084
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
