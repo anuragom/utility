@@ -2,6 +2,8 @@ package com.omnivers.utility_service.service;
 
 import com.omnivers.utility_service.dto.ApiResponse;
 import com.omnivers.utility_service.dto.CNActivationRequest;
+import com.omnivers.utility_service.dto.CNDetailDTO;
+import com.omnivers.utility_service.mapper.CNReportMapper;
 import com.omnivers.utility_service.repository.CNActivationRepository;
 import com.omnivers.utility_service.repository.CNReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.Timestamp;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +25,8 @@ public class CNActivationServiceImpl implements CNActivationService {
 
     private final CNActivationRepository cnActivationRepository;
     private final CNReportRepository cnReportRepository;
+    private final CNReportMapper cnReportMapper;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,4 +74,17 @@ public class CNActivationServiceImpl implements CNActivationService {
 
         return ApiResponse.success("CN activated successfully", null);
     }
+
+
+    public List<CNDetailDTO> getCNDetail(Long cnNo) {
+        List<Object[]> results = cnActivationRepository.getCNDetail(cnNo);
+        if (results == null || results.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return cnReportMapper.mapToCNDetail(results);
+
+
+    }
+
 }
