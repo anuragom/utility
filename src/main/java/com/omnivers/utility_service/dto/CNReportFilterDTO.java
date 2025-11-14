@@ -40,5 +40,9 @@ public class CNReportFilterDTO {
     @JsonProperty("searchText")
     private String searchText;
 
+    @JsonProperty("sourceBranchCodes")
+    private List<Integer> sourceBranchCodes;
+
+
 
 }

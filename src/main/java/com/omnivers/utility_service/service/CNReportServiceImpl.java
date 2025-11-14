@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,14 +49,16 @@ public class CNReportServiceImpl implements CNReportService {
         String ewbStatus = filterDTO.getEwbStatus() != null ? filterDTO.getEwbStatus().trim().toUpperCase() : null;
         String cnStatus = filterDTO.getCnStatus().trim().toUpperCase(); // ACTIVATED or DRAFT
         String searchText = filterDTO.getSearchText() != null ? filterDTO.getSearchText().trim() : null;
+        List<Integer> sourceBranchCodes = filterDTO.getSourceBranchCodes() != null ? filterDTO.getSourceBranchCodes() : Collections.emptyList();
+
+        int srcEmpty = (sourceBranchCodes == null || sourceBranchCodes.isEmpty()) ? 1 : 0;
 
         int pageNum = page != null && page >= 0 ? page : 0;
         int pageSize = size != null && size > 0 && size <= 100 ? size : 10;
         Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         Page<Object[]> resultPage = cnReportRepository.findCNReports(
-                cnStatus, dateType, ewbStatus, fromDate, toDate, searchText,pageable
-        );
+                cnStatus, dateType, ewbStatus, fromDate, toDate, searchText,sourceBranchCodes,srcEmpty,pageable);
 
         return resultPage.map(cnReportMapper::mapToDTO);
     }

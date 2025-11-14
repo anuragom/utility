@@ -41,6 +41,7 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
                 (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN (7,2))
                 OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
               )
+          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )      
           AND (
                 (:P_FROM_DATE IS NULL AND :P_TO_DATE IS NULL)
                 OR (
@@ -83,6 +84,7 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
                 (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN (7,2))
                 OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
               )
+          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )                                                                       
           AND (
                 (:P_FROM_DATE IS NULL AND :P_TO_DATE IS NULL)
                 OR (
@@ -108,6 +110,8 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
             @Param("P_FROM_DATE") LocalDate fromDate,
             @Param("P_TO_DATE") LocalDate toDate,
             @Param("searchText") String searchText,
+            @Param("P_SRC_BRANCH") List<Integer> sourceBranchCodes,
+            @Param("P_SRC_EMPTY") Integer srcEmpty,
             Pageable pageable
     );
 
