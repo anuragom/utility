@@ -18,4 +18,4 @@ server:
   port: 8084
 
 cors:
-  allowedOrigins: "http://localhost:3000/"
+  allowedOrigins: "*"

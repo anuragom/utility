@@ -12,19 +12,16 @@ import java.util.Arrays;
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowedOrigins}")
-    private String allowedOrigins;
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-
+        // Allow all origins
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.addAllowedMethod(CorsConfiguration.ALL);
         configuration.addAllowedHeader(CorsConfiguration.ALL);
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(false); // must be false for '*'
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -32,3 +29,4 @@ public class CorsConfig {
         return source;
     }
 }
+
