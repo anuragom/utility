@@ -18,13 +18,14 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
 
     @Query(
             value = """
-        SELECT A.CN_CN_NO,
+        SELECT 
+               A.CN_CN_NO,
                TO_CHAR(A.CN_ENTER_DATE,'DD/MM/YY HH24:MI') CN_DATE,
                B.EWAY_BILL_# EWAY_NO,
                A.CN_SOURCE_BRANCH_CODE SRC,
                A.CN_DESTINATION_BRANCH_CODE DEST,
-               D.CUSTOMER_CUSTOMER_NAME || ' ' || D.CUSTOMER_CUSTOMER_ADDRESS || ' ' || D.CUSTOMER_PIN_CODE FROM_ADDRESS,
-               C.CN_DLY_NAME || ' ' || C.CN_DLY_ADDRESS1 || ' ' || C.CN_DLY_PIN TO_ADDRESS,
+               D.CUSTOMER_CUSTOMER_NAME || ' ' || D.CUSTOMER_CUSTOMER_ADDRESS || ' ' || D.CUSTOMER_PIN_CODE AS FROM_ADDRESS,
+               C.CN_DLY_NAME || ' ' || C.CN_DLY_ADDRESS1 || ' ' || C.CN_DLY_PIN AS TO_ADDRESS,
                SUM(B.CN_PKG) CN_PKG,
                COUNT(B.CN_INVOICE_NO) NO_OF_INVOICE,
                SUM(B.CN_CHARGED_WEIGHT) CHARGED_WEIGHT,
@@ -37,32 +38,46 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
         JOIN OPS_CN_DLY_ADDRESS C ON C.CN_CN_NO = A.CN_CN_NO
         JOIN COR_CUSTOMER_M D ON D.CUSTOMER_CUSTOMER_CODE = A.CN_CONSIGNOR_CODE
         WHERE A.ENTER_FORM_NAME = 'EWB'
+        
           AND (
                 (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN (7,2))
                 OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
               )
-          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )      
+
+          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )
+
           AND (
                 (:P_FROM_DATE IS NULL AND :P_TO_DATE IS NULL)
                 OR (
                     CASE
+                        WHEN A.CN_CN_STATUS = 7 AND '' IN (:P_EWB_STATUS_LIST)
+                            THEN TRUNC(B.EWAY_BILL_DATE)
+
+                        WHEN A.CN_CN_STATUS = 7 AND 'EXPIRED' IN (:P_EWB_STATUS_LIST)
+                            THEN TRUNC(B.EWAY_BILL_VALID_DATE)
+
                         WHEN A.CN_CN_STATUS NOT IN (7,2) AND :P_DATE_TYPE = 'CN_DATE'
                             THEN NVL(A.CN_MAMUAL_CN_DATE, TRUNC(A.CN_CN_DATE))
+
                         WHEN A.CN_CN_STATUS NOT IN (7,2) AND :P_DATE_TYPE = 'EWB_DATE'
                             THEN TRUNC(B.EWAY_BILL_DATE)
-                        WHEN A.CN_CN_STATUS = 7 AND (:P_EWB_STATUS IS NULL OR :P_EWB_STATUS = '')
-                            THEN TRUNC(B.EWAY_BILL_DATE)
-                        WHEN A.CN_CN_STATUS = 7 AND :P_EWB_STATUS = 'EXPIRED'
-                            THEN TRUNC(B.EWAY_BILL_VALID_DATE)
                     END BETWEEN :P_FROM_DATE AND :P_TO_DATE
                 )
               )
+
           AND (
-                (:cnStatus = 'DRAFT' AND (:searchText IS NULL OR B.CN_INVOICE_NO LIKE '%' || :searchText || '%' OR B."EWAY_BILL_#" LIKE '%' || :searchText || '%'))
-                OR (:cnStatus = 'ACTIVATED' AND (:searchText IS NULL OR TO_CHAR(A.CN_CN_NO) LIKE '%' || :searchText || '%'))
+                (:cnStatus = 'DRAFT' AND (:searchText IS NULL 
+                       OR B.CN_INVOICE_NO LIKE '%' || :searchText || '%' 
+                       OR B."EWAY_BILL_#" LIKE '%' || :searchText || '%'))
+                OR (
+                       :cnStatus = 'ACTIVATED' AND 
+                       (:searchText IS NULL 
+                       OR TO_CHAR(A.CN_CN_NO) LIKE '%' || :searchText || '%')
+                   )
               )
-    
-        GROUP BY A.CN_CN_NO,
+
+        GROUP BY 
+                 A.CN_CN_NO,
                  B.EWAY_BILL_#,
                  A.CN_SOURCE_BRANCH_CODE,
                  A.CN_DESTINATION_BRANCH_CODE,
@@ -70,8 +85,10 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
                  C.CN_DLY_NAME || ' ' || C.CN_DLY_ADDRESS1 || ' ' || C.CN_DLY_PIN,
                  TO_CHAR(A.CN_ENTER_DATE,'DD/MM/YY HH24:MI'),
                  E.CN_TOTAL_TOTAL
+
         ORDER BY A.CN_CN_NO
         """,
+
             countQuery = """
         SELECT COUNT(DISTINCT A.CN_CN_NO)
         FROM OPS_CN_M A
@@ -80,33 +97,40 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
         JOIN OPS_CN_DLY_ADDRESS C ON C.CN_CN_NO = A.CN_CN_NO
         JOIN COR_CUSTOMER_M D ON D.CUSTOMER_CUSTOMER_CODE = A.CN_CONSIGNOR_CODE
         WHERE A.ENTER_FORM_NAME = 'EWB'
+
           AND (
                 (:cnStatus = 'ACTIVATED' AND A.CN_CN_STATUS NOT IN (7,2))
                 OR (:cnStatus = 'DRAFT' AND A.CN_CN_STATUS = 7)
               )
-          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )                                                                       
+
+          AND ( :P_SRC_EMPTY = 1 OR A.CN_SOURCE_BRANCH_CODE IN (:P_SRC_BRANCH) )
+
           AND (
                 (:P_FROM_DATE IS NULL AND :P_TO_DATE IS NULL)
                 OR (
                     CASE
+                        WHEN A.CN_CN_STATUS = 7 AND '' IN (:P_EWB_STATUS_LIST)
+                            THEN TRUNC(B.EWAY_BILL_DATE)
+
+                        WHEN A.CN_CN_STATUS = 7 AND 'EXPIRED' IN (:P_EWB_STATUS_LIST)
+                            THEN TRUNC(B.EWAY_BILL_VALID_DATE)
+
                         WHEN A.CN_CN_STATUS NOT IN (7,2) AND :P_DATE_TYPE = 'CN_DATE'
                             THEN NVL(A.CN_MAMUAL_CN_DATE, TRUNC(A.CN_CN_DATE))
+
                         WHEN A.CN_CN_STATUS NOT IN (7,2) AND :P_DATE_TYPE = 'EWB_DATE'
                             THEN TRUNC(B.EWAY_BILL_DATE)
-                        WHEN A.CN_CN_STATUS = 7 AND (:P_EWB_STATUS IS NULL OR :P_EWB_STATUS = '')
-                            THEN TRUNC(B.EWAY_BILL_DATE)
-                        WHEN A.CN_CN_STATUS = 7 AND :P_EWB_STATUS = 'EXPIRED'
-                            THEN TRUNC(B.EWAY_BILL_VALID_DATE)
                     END BETWEEN :P_FROM_DATE AND :P_TO_DATE
                 )
               )
         """,
+
             nativeQuery = true
     )
     Page<Object[]> findCNReports(
             @Param("cnStatus") String cnStatus,
             @Param("P_DATE_TYPE") String dateType,
-            @Param("P_EWB_STATUS") String ewbStatus,
+            @Param("P_EWB_STATUS_LIST") List<String> ewbStatusList,
             @Param("P_FROM_DATE") LocalDate fromDate,
             @Param("P_TO_DATE") LocalDate toDate,
             @Param("searchText") String searchText,
@@ -114,6 +138,8 @@ public interface CNReportRepository extends JpaRepository<CNReport, String> {
             @Param("P_SRC_EMPTY") Integer srcEmpty,
             Pageable pageable
     );
+
+
 
     @Query(
             value = """

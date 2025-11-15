@@ -46,19 +46,26 @@ public class CNReportServiceImpl implements CNReportService {
 
 
         String dateType = filterDTO.getDateType() != null ? filterDTO.getDateType().trim().toUpperCase() : "CN_DATE";
-        String ewbStatus = filterDTO.getEwbStatus() != null ? filterDTO.getEwbStatus().trim().toUpperCase() : null;
         String cnStatus = filterDTO.getCnStatus().trim().toUpperCase(); // ACTIVATED or DRAFT
         String searchText = filterDTO.getSearchText() != null ? filterDTO.getSearchText().trim() : null;
         List<Integer> sourceBranchCodes = filterDTO.getSourceBranchCodes() != null ? filterDTO.getSourceBranchCodes() : Collections.emptyList();
+        List<String> ewbStatusList =
+                filterDTO.getEwbStatus() != null
+                        ? filterDTO.getEwbStatus().stream()
+                        .map(String::toUpperCase)
+                        .toList()
+                        : Collections.emptyList();
+
 
         int srcEmpty = (sourceBranchCodes == null || sourceBranchCodes.isEmpty()) ? 1 : 0;
+        log.info("ewbStatusList: {}",ewbStatusList);
 
         int pageNum = page != null && page >= 0 ? page : 0;
         int pageSize = size != null && size > 0 && size <= 100 ? size : 10;
         Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         Page<Object[]> resultPage = cnReportRepository.findCNReports(
-                cnStatus, dateType, ewbStatus, fromDate, toDate, searchText,sourceBranchCodes,srcEmpty,pageable);
+                cnStatus, dateType, ewbStatusList, fromDate, toDate, searchText,sourceBranchCodes,srcEmpty,pageable);
 
         return resultPage.map(cnReportMapper::mapToDTO);
     }

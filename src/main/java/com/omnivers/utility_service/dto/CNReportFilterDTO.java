@@ -35,7 +35,7 @@ public class CNReportFilterDTO {
     private String cnStatus; // ACTIVATED or DRAFT
 
     @JsonProperty("ewbStatus")
-    private String ewbStatus; // For draft CN: "" or "EXPIRED"
+    private List<String> ewbStatus;   // Example: ["", "EXPIRED"]
 
     @JsonProperty("searchText")
     private String searchText;
